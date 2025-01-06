@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import BackgroundHeading from "./BackgroundHeading";
 import Footer from "./Footer";
 import Header from "./Header";
@@ -7,7 +7,9 @@ import Sidebar from "./Sidebar";
 import { initialItems } from "../lib/constants";
 
 function App() {
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState(() => {
+    return JSON.parse(localStorage.getItem("items")) || initialItems;
+  });
 
   const handleAddItem = (newItemText) => {
     const newItem = {
@@ -42,7 +44,7 @@ function App() {
     setItems(newItems);
   };
 
-  const handleItemCheckboxChange = (id) => {
+  const handleToggleItem = (id) => {
     console.log("item checkbox change", id);
     const newItems = items.map((item) =>
       item.id === id ? { ...item, isComplete: !item.isComplete } : item
@@ -50,22 +52,29 @@ function App() {
     setItems(newItems);
   };
 
-  const handleItemRemove = (id) => {
+  const handleDeleteItem = (id) => {
     console.log("item remove", id);
     const newItems = items.filter((item) => item.id !== id);
     setItems(newItems);
   };
+
+  useEffect(() => {
+    localStorage.setItem("items", JSON.stringify(items));
+  }, [items]);
 
   return (
     <>
       <BackgroundHeading />
 
       <main>
-        <Header />
+        <Header
+          totalNumberOfItems={items.length}
+          numberOfItemsPacked={items.filter((item) => item.isComplete).length}
+        />
         <ItemList
           items={items}
-          handleItemCheckboxChange={handleItemCheckboxChange}
-          handleItemRemove={handleItemRemove}
+          handleToggleItem={handleToggleItem}
+          handleDeleteItem={handleDeleteItem}
         />
         <Sidebar
           handleAddItem={handleAddItem}
